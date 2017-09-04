@@ -1,0 +1,9 @@
+*.arh
+*~
+*.cydsn/Cortex*/*
+*.cydsn/Export/*
+*.cydsn/Generated_Source
+*.cydsn/codegentemp
+*.cydsn/BUILD.log
+Backup
+.DS_Store
