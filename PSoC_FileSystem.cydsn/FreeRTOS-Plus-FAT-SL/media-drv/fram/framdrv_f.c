@@ -55,16 +55,30 @@
 
 /* The F_DRIVER structure that is filled with the RAM disk versions of the read
 sector, write sector, etc. functions. */
+
 static F_DRIVER  t_driver;
+/* Disk not initialized yet. */
+static char in_use = 0;
 
 static const unsigned long maxsector = FDRIVER_VOLUME0_SIZE / F_SECTOR_SIZE;
 static const unsigned long halfsector = FDRIVER_VOLUME0_SIZE / F_SECTOR_SIZE / 2;
 
-/* Disk not initialized yet. */
-static char in_use = 0;
-
-char buff[128];
-
+/****************************************************************************
+ *
+ * calcAddress
+ *
+ * This function takes a sector and returns the address in the bank for the
+ * start of the secor
+ *
+ * INPUTS
+ *
+ * unsigned long sector - which logical sector in the FRAM
+ * 
+ * RETURNS
+ *
+ * The FRAM Address of the sector
+ *
+ ***************************************************************************/
 static inline uint32_t calcAddress(unsigned long sector)
 {
     if(sector < halfsector)
@@ -73,22 +87,51 @@ static inline uint32_t calcAddress(unsigned long sector)
         return (sector-halfsector) * F_SECTOR_SIZE;
 }
 
-
+/****************************************************************************
+ *
+ * calcI2CAddress
+ *
+ * This function takes a sector from 0 --> maxsector and figures out which bank
+ * the address exists.
+ *
+ * INPUTS
+ *
+ * unsigned long sector - which logical sector in the FRAM to write to
+ * 
+ * RETURNS
+ *
+ * The I2C Address of Bank 0 or Bank 1
+ *
+ ***************************************************************************/
 static inline uint32_t calcI2CAddress(unsigned long sector)
 {
     if(sector < halfsector)
-        return 0x50;
+        return 0x50; // I2C Bank 0 Address from the datasheet
     else
-        return 0x51;
-        
-    
+        return 0x51; // I2C Bank 0 Address - From the datasheet  
 }
 
 /****************************************************************************
- * Read one sector
+ *
+ * fram_readsector
+ *
+ * This function reads 512 bytes into the SRAM at the pointer data
+ *
+ * INPUTS
+ *
+ * driver - driver structure
+ * void *data - a pointer to the SRAM where the 512 bytes of data will be written
+ * unsigned long sector - which logical sector in the FRAM to read from
+ * 
+ * RETURNS
+ *
+ * error code or MDRIVER_RAM_NO_ERROR if successful
+ *
  ***************************************************************************/
+
 static int fram_readsector ( F_DRIVER * driver, void * data, unsigned long sector )
 {
+    char buff[128]; // A scratch buffer for UART Printing
     (void)driver;
     uint16 address;
     uint32_t status;
@@ -129,25 +172,38 @@ static int fram_readsector ( F_DRIVER * driver, void * data, unsigned long secto
 }
 
 
-
 /****************************************************************************
- * Write one sector
+ *
+ * fram_writesector
+ *
+ * This function takes 512 bytes of user input and writes to the FRAM in the
+ *
+ * INPUTS
+ *
+ * driver - driver structure
+ * void *data - a pointer to the SRAM where the 512 bytes of data exists
+ * unsigned long sector - which logical sector in the FRAM to write to
+ * 
+ * RETURNS
+ *
+ * error code or MDRIVER_RAM_NO_ERROR if successful
+ *
  ***************************************************************************/
+
 static int fram_writesector ( F_DRIVER * driver, void * data, unsigned long sector )
 {
-        (void)driver;
-    
+    (void)driver;
+    char buff[128]; // A scratch buffer for UART Printing
     uint16 address;
+    int i;
         
     sprintf(buff,"Wrote sector %d\n",(int)sector);
     UART_UartPutString(buff);
         
     address = calcAddress(sector);
     I2C_I2CMasterSendStart(calcI2CAddress(sector),I2C_I2C_WRITE_XFER_MODE);
-    int i;
     I2C_I2CMasterWriteByte((address>>8)&0xFF);
     I2C_I2CMasterWriteByte(address & 0xFF); // 
-    
     
     for(i=0;i<512;i++)
     {
@@ -192,7 +248,7 @@ static int fram_getphy ( F_DRIVER * driver, F_PHY * phy )
 
 /****************************************************************************
  *
- * ram_release
+ * fram_release
  *
  * Releases a drive
  *
@@ -210,10 +266,34 @@ static void fram_release ( F_DRIVER * driver )
   in_use = 0;
 }
 
+/****************************************************************************
+ *
+ * fram_getstatus
+ *
+ * This function must return the status of the drive... F_ST_MISSING, F_ST_CHANGED
+ * or F_ST_WRPROECT or 0 (for OK)
+ * INPUTS
+ *
+ * driver_param - driver parameter
+ *
+ *
+ * For the FRAM I dont support any of these other status's
+ ***************************************************************************/
+
+static long fram_getstatus(F_DRIVER *driver)
+{
+    (void) driver;
+    // F_ST_MISSING	The media is not present (it has been removed or was never inserted).
+    //F_ST_CHANGED	Since F_GETSTATUS() was last called the media has either been removed and re-inserted, or a different media has been inserted.
+    //F_ST_WRPROTECT	The media is write protected.
+    
+    return 0;
+}
+
 
 /****************************************************************************
  *
- * ram_initfunc
+ * fram_initfunc
  *
  * this init function has to be passed for highlevel to initiate the
  * driver functions
@@ -242,20 +322,39 @@ F_DRIVER * fram_initfunc ( unsigned long driver_param )
   t_driver.writesector = fram_writesector;
   t_driver.getphy = fram_getphy;
   t_driver.release = fram_release;
+  t_driver.getstatus = fram_getstatus;
 
   in_use = 1;
 
   return &t_driver;
-} /* ram_initfunc */
+} /* fram_initfunc */
 
-uint8_t sectorData[ F_SECTOR_SIZE];
-
+/****************************************************************************
+ *
+ * printSector
+ *
+ * This function prints out the sector as rows of hex bytes followed by isprint() 
+ * ASCII characters or "-" if it is not printable.  This function ASSUMES!!! that
+ * it can call UART_UartPutString (this is not a very good assumption)
+ *
+ * INPUTS
+ *
+ * driver_param - driver parameter
+ * data - unused
+ * sector - which sector
+ *
+ * RETURNS
+ *
+ * void
+ *
+ ***************************************************************************/
 void printSector( F_DRIVER * driver, void * data, unsigned long sector )
 {
     int i;
     int count=0;
     (void)data;
-    
+    uint8_t sectorData[ F_SECTOR_SIZE];
+    char buff[128]; // A scratch buffer for UART Printing
     fram_readsector(driver,sectorData,sector);
     
     sprintf(buff,"\nSector = %lu\n",sector);

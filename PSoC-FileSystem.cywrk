@@ -8,6 +8,7 @@
 <files />
 <projects>
 <v>.\PSoC_FileSystem.cydsn\PSoC_FileSystem.cyprj</v>
+<v>.\Blank.cydsn\Blank.cyprj</v>
 </projects>
 <workspace_id v="4e09c7e0-2d26-4f03-8dba-1fd1924fe896" />
 <WriteAppVersionLastSavedWith v="4.1.0.3210" />

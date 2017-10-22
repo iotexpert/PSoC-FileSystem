@@ -52,7 +52,6 @@
 extern "C" {
 #endif
 
-#define F_RAM_DRIVE0 0
 
 enum
 {
