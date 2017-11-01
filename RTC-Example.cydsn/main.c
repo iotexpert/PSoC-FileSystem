@@ -69,7 +69,8 @@ void uartTask(void *arg)
     clearScreen();
     UART_UartPutString("Start Real Time Clock Demo\n");
     UART_SetCustomInterruptHandler(uartISR);
-    uint32 timeBCD;
+    uint32_t time;
+    uint32_t ampm;
     char buff[32];
     
     RTC_Start();
@@ -86,12 +87,25 @@ void uartTask(void *arg)
             c= UART_UartGetChar();
 			switch(c)
 			{
-                case 't':
-                    
-                    timeBCD = RTC_GetTime();
-                    sprintf(buff,"%d:%d:%d\n",(int)RTC_GetHours(timeBCD),(int)RTC_GetMinutes(timeBCD),(int)RTC_GetSecond(timeBCD));
+                
+                case 'x':
+                    RTC_SetDateAndTime(RTC_ConstructTime( RTC_12_HOURS_FORMAT, RTC_AM ,12,0,0),RTC_GetDate());
+                    time = RTC_GetTime();
+                    ampm = RTC_GetAmPm(time);
+                    sprintf(buff,"%d:%d:%d %s\n",(int)RTC_GetHours(time),(int)RTC_GetMinutes(time),(int)RTC_GetSecond(time),(ampm==RTC_PM)?"PM":"AM");
                     UART_UartPutString(buff);
                     
+                break;
+                    
+                case 's':
+                    RTC_SetDateAndTime(RTC_ConstructTime( RTC_12_HOURS_FORMAT, RTC_AM ,12,0,0),RTC_GetDate());
+                break;
+          
+                case 't':
+                    time = RTC_GetTime();
+                    ampm = RTC_GetAmPm(time);
+                    sprintf(buff,"%d:%d:%d %s\n",(int)RTC_GetHours(time),(int)RTC_GetMinutes(time),(int)RTC_GetSecond(time),(ampm==RTC_PM)?"PM":"AM");
+                    UART_UartPutString(buff);    
                 break;
                 
 			

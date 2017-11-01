@@ -3243,7 +3243,7 @@
         <Data key="sourceClk_plus_acuracy_name" value="0.015" />
         <Data key="src_clk_id" value="238B4C77-851C-44d4-8040-C396F09E3440" />
         <Data key="src_clk_name" value="WCO" />
-        <Data key="start_on_reset" value="False" />
+        <Data key="start_on_reset" value="True" />
       </Group>
       <Group key="13A80296-70D5-4f89-B0D3-510602484A50">
         <Data key="check_tolerance" value="False" />
@@ -3450,7 +3450,7 @@
         <Data key="sourceClk_plus_acuracy_name" value="0.015" />
         <Data key="src_clk_id" value="D09AF12C-2C44-4974-99B3-662843C5DC35" />
         <Data key="src_clk_name" value="Timer0 (WDT0)" />
-        <Data key="start_on_reset" value="False" />
+        <Data key="start_on_reset" value="True" />
       </Group>
       <Group key="A8C3204D-9BE8-4092-97CC-B0B247063044">
         <Data key="check_tolerance" value="False" />
@@ -3468,7 +3468,7 @@
         <Data key="sourceClk_plus_acuracy_name" value="0.2" />
         <Data key="src_clk_id" value="" />
         <Data key="src_clk_name" value="" />
-        <Data key="start_on_reset" value="True" />
+        <Data key="start_on_reset" value="False" />
         <Data key="trim_with" value="WCO" />
       </Group>
       <Group key="BA1FF31D-570B-4ee4-8086-5A1087FF2AD2">
@@ -3655,7 +3655,7 @@
     <Data key="CYDEV_DEBUG_PROTECT" value="OPEN" />
     <Data key="CYDEV_DEBUGGING_DPS" value="SWD" />
     <Data key="CYDEV_HEAP_SIZE" value="0" />
-    <Data key="CYDEV_STACK_SIZE" value="100" />
+    <Data key="CYDEV_STACK_SIZE" value="400" />
     <Data key="CYDEV_TEMPERATURE" value="-40C - 85C" />
     <Data key="CYDEV_USE_BUNDLED_CMSIS" value="True" />
     <Data key="CYDEV_VARIABLE_VDDA" value="True" />
